@@ -33,4 +33,7 @@ application:
   security:
     jwt:
       secret-key: 01kklk4ag@ino^=yyrva7n!wn*n^iq#@**!(c^eh_dz!0n$(u^ 
-      expiration: 8640000                
+      expiration: 8640000
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account                
