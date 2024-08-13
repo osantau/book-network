@@ -7,9 +7,13 @@ import oct.soft.book.user.UserRepository;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import oct.soft.book.email.EmailService;
 import oct.soft.book.email.EmailTemplateName;
 import oct.soft.book.role.RoleRepository;
+import oct.soft.book.security.JwtService;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +34,9 @@ public class AuthenticationService {
 	private final UserRepository userRepository;
 	private final TokenRepository tokenRepository;
 	private final EmailService emailService;
-
+	private final AuthenticationManager authenticationManager;
+	private final JwtService jwtService;
+	
 	@Value("${application.mailing.frontend.activation-url}") 
 	String activationUrl;
 	
@@ -69,6 +76,17 @@ public class AuthenticationService {
 			sb.append(characters.charAt(randomIndex));
 		}
 		return sb.toString();
+	}
+
+	public AuthenticationResponse authenticate(AuthenticationRequest request) {
+		var auth = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+				);
+		var claims = new HashMap<String,Object>();
+		var user = ((User) auth.getPrincipal());
+		claims.put("fullName", user.fullName());
+		var jwtToken = jwtService.generateToken(claims,  user);
+		return AuthenticationResponse.builder().token(jwtToken).build();
 	}
 
 }
