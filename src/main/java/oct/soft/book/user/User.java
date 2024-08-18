@@ -19,12 +19,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import oct.soft.book.Book;
+import oct.soft.book.history.BookTransactionHistory;
 import oct.soft.book.role.Role;
 
 @Getter
@@ -51,13 +54,17 @@ public class User implements UserDetails, Principal, Serializable {
 	private boolean enabled;
 	@ManyToMany(fetch = FetchType.EAGER)
 	private List<Role> roles;
+	@OneToMany(mappedBy = "owner")
+	private List<Book> books;
+	@OneToMany(mappedBy = "user")
+	private List<BookTransactionHistory> histories;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 
 		return this.roles.stream().map(r -> new SimpleGrantedAuthority(r.getName())).collect(Collectors.toList());
 	}
-    
+
 	@Override
 	public String getPassword() {
 		// TODO Auto-generated method stub
